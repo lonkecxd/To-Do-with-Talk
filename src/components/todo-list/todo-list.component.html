@@ -1,0 +1,44 @@
+<div class="bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl p-6 h-full flex flex-col">
+  <h2 class="text-2xl font-bold text-white mb-6 border-b border-white/10 pb-4">Goals & Tasks</h2>
+
+  @if (goalProgress().length === 0) {
+    <div class="flex-grow flex flex-col items-center justify-center text-gray-400 text-center">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.745 3.745 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z" />
+      </svg>
+      <p class="font-semibold text-lg">Your goals are clear!</p>
+      <p class="text-sm">Chat with the AI assistant to create new goals and tasks.</p>
+    </div>
+  } @else {
+    <div class="space-y-6 overflow-y-auto pr-2 -mr-4">
+      @for (goal of goalProgress(); track goal.id) {
+        <div class="bg-black/30 p-4 rounded-lg border border-white/5 hover:bg-black/40 transition-colors duration-300">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="text-lg font-semibold text-cyan-300">{{ goal.name }}</h3>
+            <span class="text-sm font-medium text-gray-300">{{ goal.progress }}%</span>
+          </div>
+          <div class="w-full bg-white/10 rounded-full h-2.5 mb-4">
+            <div class="bg-gradient-to-r from-sky-400 to-cyan-300 h-2.5 rounded-full transition-all duration-500 ease-out" [style.width.%]="goal.progress"></div>
+          </div>
+
+          <div class="space-y-3">
+            @for (todo of goal.todos; track todo.id) {
+              <div>
+                <div class="flex justify-between items-center text-sm mb-1">
+                  <p class="text-gray-200">{{ todo.description }}</p>
+                  <span class="text-gray-400">{{ todo.progress }}%</span>
+                </div>
+                <div class="w-full bg-white/10 rounded-full h-1.5">
+                  <div class="bg-gradient-to-r from-fuchsia-500 to-purple-500 h-1.5 rounded-full transition-all duration-500 ease-out" [style.width.%]="todo.progress"></div>
+                </div>
+              </div>
+            }
+            @if (goal.todos.length === 0) {
+              <p class="text-sm text-gray-500 italic">No tasks for this goal yet.</p>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  }
+</div>

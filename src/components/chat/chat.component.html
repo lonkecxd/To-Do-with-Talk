@@ -1,0 +1,94 @@
+<div class="flex flex-col h-full bg-black/20 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden">
+  <!-- Chat messages -->
+  <div #chatContainer class="flex-grow p-6 space-y-6 overflow-y-auto">
+    @for (message of messages(); track $index) {
+      <!-- AI Message -->
+      @if (message.role === 'model') {
+        <div class="flex items-start gap-3.5">
+          <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+          </div>
+          <div class="bg-black/30 rounded-lg p-4 max-w-lg shadow-md">
+            <p class="text-white">{{ message.text }}</p>
+            @if (message.proposal && !message.proposalHandled) {
+              <div class="mt-4 border-t border-white/10 pt-3">
+                <p class="font-semibold text-cyan-300 mb-2">AI Suggestion:</p>
+                @switch (message.proposal.type) {
+                  @case ('CREATE_GOAL') {
+                    <p class="text-sm">Create new goal: <strong class="text-white">"{{ message.proposal.goalName }}"</strong></p>
+                  }
+                  @case ('CREATE_TODO') {
+                    <p class="text-sm">Add task: <strong class="text-white">"{{ message.proposal.todoDescription }}"</strong> to goal <strong class="text-white">"{{ message.proposal.existingGoalName }}"</strong></p>
+                  }
+                  @case ('UPDATE_TODO') {
+                    <p class="text-sm">Update task: <strong class="text-white">"{{ message.proposal.existingTodoDescription }}"</strong> to {{ message.proposal.progress }}% complete.</p>
+                  }
+                }
+                <div class="flex gap-2 mt-3">
+                  <button (click)="handleProposal(message.proposal, $index, true)" class="px-3 py-1 bg-gradient-to-r from-green-400 to-teal-500 hover:from-green-500 hover:to-teal-600 text-white text-sm font-semibold rounded-md transition-all shadow-sm">Confirm</button>
+                  <button (click)="handleProposal(message.proposal, $index, false)" class="px-3 py-1 bg-white/10 hover:bg-white/20 text-white text-sm font-semibold rounded-md transition-colors">Cancel</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- User Message -->
+      @if (message.role === 'user') {
+        <div class="flex items-start gap-3.5 justify-end">
+          <div class="bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg p-4 max-w-lg shadow-md">
+            <p class="text-white">{{ message.text }}</p>
+          </div>
+          <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center font-bold shadow-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+        </div>
+      }
+    }
+    <!-- Loading indicator -->
+    @if (isLoading()) {
+      <div class="flex items-start gap-3.5">
+        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center">
+           <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+            </svg>
+        </div>
+        <div class="bg-black/30 rounded-lg p-4 max-w-lg">
+          <div class="flex items-center space-x-2">
+            <div class="w-2.5 h-2.5 bg-cyan-300 rounded-full animate-pulse"></div>
+            <div class="w-2.5 h-2.5 bg-cyan-300 rounded-full animate-pulse [animation-delay:0.2s]"></div>
+            <div class="w-2.5 h-2.5 bg-cyan-300 rounded-full animate-pulse [animation-delay:0.4s]"></div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Message input -->
+  <div class="p-4 bg-black/20 border-t border-white/10">
+    <form (ngSubmit)="sendMessage()" class="flex items-center gap-3">
+      <input
+        type="text"
+        [(ngModel)]="userInput"
+        name="userInput"
+        placeholder="Chat with your AI assistant..."
+        class="flex-grow bg-black/20 border border-white/10 rounded-full py-2.5 px-5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all"
+        autocomplete="off"
+      />
+      <button
+        type="submit"
+        [disabled]="!userInput().trim() || isLoading()"
+        class="bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-full p-2.5 hover:shadow-lg hover:shadow-cyan-500/50 disabled:bg-gray-500 disabled:shadow-none disabled:cursor-not-allowed transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-2 focus:ring-offset-slate-900 group"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 group-hover:rotate-45 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+        </svg>
+      </button>
+    </form>
+  </div>
+</div>

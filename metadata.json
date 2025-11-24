@@ -1,0 +1,5 @@
+{
+  "name": "AI To-Do Assistant",
+  "description": "An intelligent to-do list manager that helps you create and track goals and tasks through a conversational AI interface. Chat with the AI, and it will summarize your conversations into actionable to-do items and update their progress.",
+  "requestFramePermissions": []
+}
